@@ -1,0 +1,65 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="match-table.html">
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-beta1/jquery.min.js"></script>
+<dom-module id="main-is">
+  <template>
+    <center>
+    	<input type="text" id="title" plaholder="match name">
+    	<input type="text" id="link" plaholder="match link">
+    	<input type="button"  name="submit" value="add" on-tap="submit" >
+    </center>
+    <div id="matches">
+      
+      <div id="matchesHolder">
+        <!-- <live-list parent-id="{{matchId}}" items="{{livedata.list}}"></live-list> -->
+      </div>
+    </div>
+  
+  </template>
+
+  <script>
+    var socket = io();
+  	var id=0;
+    Polymer({
+      is: "main-is",
+      ready:function(){
+        this.initSocket()
+      },
+      setDataLive:function(liveData,id,count){
+              this.livedata = liveData;
+              this.matchId = id;
+              this.count = count
+      },
+      initSocket:function(){
+        var that = this
+        socket.on('match',function(match){
+          console.log('Match id is '+ match.id + ' and data is '+match.data)
+          that.setDataLive(match.data,match.id,match.data.count)
+        })
+      },
+      submit:function(){
+        console.log('submitted')
+      	id+=1
+      	console.log(id)
+      	var link= document.getElementById('link').value
+      	socket.emit('match',{
+      		id: id,
+      		link:link
+      	})
+      	document.getElementById('link').value = ''
+      	document.getElementById('title').value = ''
+                for(var i = 0, len = id; i < len;i++ ){
+                    var newMatch = document.createElement('live-list');
+                    var matchesHolder = this.$['matchesHolder'];
+                    newMatch.setData(this.matches[i]);
+                    newMatch.setAttribute('id', 'id' + id);
+                    matchesHolder.appendChild(newMatch);
+                }
+
+
+      }
+    });
+  </script>
+
+</dom-module>

@@ -1,0 +1,113 @@
+<dom-module id="live-list">
+    <style>
+        :host{}
+        #list .row + .row {
+            border-top: none;
+        }
+        #list{
+          float: left;
+          width: 190px ;
+        }
+        #list .row .col {
+                border-right: 1px solid #ccc;
+                border-bottom: 1px solid #ccc;
+                color:#7f8c8d;
+                width: 46.1px;
+                font-weight: 300;
+                text-align: center;
+/*                background:#27ae60; red 
+                background:#e74c3c; green*/
+        }
+
+        #list .row .col[data-direction="up"] {
+            background: darkgreen;
+            color: #fff;
+        }
+
+        #list .row .col[data-direction="down"] {
+            background: darkred;
+            color: #fff;
+        }
+
+        #list .row .col + .col {
+            border-left: none;
+        }
+        .asso,
+        .xi,
+        .diplo{
+         float: left;
+  text-align: center;
+  padding-left: 13px;
+  font-size: 12px;
+        }
+    </style>
+    <template>
+       <div id="list">
+           <template is="dom-repeat" items="{{items}}">
+               <div class="row layout horizontal" website$="{{item.website}}">
+                   <div class="asso col flex" data-direction$="{{compareCol(item, 'asso')}}">{{item.asso}}</div>
+                   <div class="xi col flex" data-direction$="{{compareCol(item, 'xi')}}">{{item.xi}}</div>
+                   <div class="diplo col flex" data-direction$="{{compareCol(item, 'diplo')}}">{{item.diplo}}</div>
+               </div>
+           </template>
+       </div>
+    </template>
+    <script>
+        Polymer({
+            is:"live-list",
+            properties: {
+                parentId: String,
+                items: {
+                    type: Array,
+                    observer: '_listChanged'
+                },
+                oldList: {
+                    type: Array
+                },
+                ƒup: {
+                    type: Object,
+                    value: {}
+                }
+            },
+            ready: function(){
+                this.directions = {};
+            },
+            _listChanged: function(newList, oldList){
+                if(oldList){
+                    this.oldList = oldList.reduce(function(oldArray, row){
+                        oldArray[row.website] = row;
+                        return oldArray;
+                    }, []);
+
+                }
+
+                //console.log(this.parentId, this.directions);
+            },
+            compareCol: function (newRow, col) {
+                var direction = '';
+                if(this.oldList && this.oldList[newRow.website]){
+                    if(this.oldList[newRow.website][col] < newRow[col]){
+                        //console.log("%s change up from %s to %s", col, this.oldList[newRow.website][col], newRow[col]);
+                        direction = "up";
+                        if(!this.directions[newRow.website]){
+                            this.directions[newRow.website] = {};
+                        }
+                        this.directions[newRow.website][col] = "up";
+                    } else if(this.oldList[newRow.website][col] > newRow[col]){
+                        //console.log("%s change down from %s to %s", col, this.oldList[newRow.website][col], newRow[col]);
+                        direction = "down";
+                        if(!this.directions[newRow.website]){
+                            this.directions[newRow.website] = {};
+                        }
+                        this.directions[newRow.website][col] = "down";
+                    } else {
+                        if(this.directions[newRow.website] && this.directions[newRow.website][col]){
+                            direction = this.directions[newRow.website][col];
+                        }
+                    }
+                }
+                return direction;
+            }
+        });
+    </script>
+</dom-module>
